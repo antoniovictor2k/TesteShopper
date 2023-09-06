@@ -1,11 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Papa from "papaparse";
+import axios from 'axios';
 
 function LeitorCSV() {
   const [csvData, setCsvData] = useState([]);
+  const [apiData, setApiData] = useState([]);
 
-  const [teste, setTeste] = useState({});
-  console.log("teste: ", teste);
+  useEffect(() => {
+    axios.get('http://localhost:9000/ecommerce/todosproducts')
+      .then(response => {
+        setApiData(response); // Armazena os dados da API no estado
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }, []);
+
+  console.log(apiData)
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -13,11 +24,10 @@ function LeitorCSV() {
     Papa.parse(file, {
       complete: (result) => {
         setCsvData(result.data);
-        setTeste(result.data);
-        console.log(result);
-        console.log(result.data);
-        console.log("ID do Produto: ", result.data[0].product_code);
-        console.log("Novo Preço: ", result.data[0].new_price);
+        // console.log(result);
+        // console.log(result.data);
+        // console.log("ID do Produto: ", result.data[0].product_code);
+        // console.log("Novo Preço: ", result.data[0].new_price);
       },
       header: true, // Se o CSV tiver cabeçalho
     });
@@ -45,6 +55,9 @@ function LeitorCSV() {
           ))}
         </tbody>
       </table>
+
+      <h2>Dados da API:</h2>
+      <pre>{JSON.stringify(apiData, null, 2)}</pre>
     </div>
   );
 }

@@ -12,7 +12,9 @@ function App() {
 
         <div>
           <button>Validar</button>
-          <button>Atualizar</button>
+          <button
+          
+          >Atualizar</button>
         </div>
       </header>
     </div>

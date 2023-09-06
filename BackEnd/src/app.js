@@ -1,6 +1,8 @@
 const express = require('express');
 const dbSequelize = require('./db');
 const ecommerceRouter = require('./ecommerceRouter');
+const cors = require('cors');
+
 
 const app = express();
 app.use(express.json());
@@ -20,6 +22,9 @@ app.use('/ecommerce', ecommerceRouter);
 app.use('/teste', (req,res) => {
     res.send('TEstandoOK')
 });
+
+
+app.use(cors()); 
 
 app.listen(9000, () => {
     console.log('Servidor funcionando..')
