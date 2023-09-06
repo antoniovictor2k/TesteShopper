@@ -38,10 +38,44 @@ const ecommerceControlle = {
         return res.status(404).json({ error: 'Produto não encontrado.' });
     }
 
-    // Atualize o valor do produto
-    await dbSequelize.query(`UPDATE products SET cost_price = ${novoPreco} WHERE code = ${codigo}`);
+    const precoMenorQueCusto = await dbSequelize.query(`SELECT code, cost_price, sales_price FROM products WHERE ${novoPreco} > cost_price and code = ${codigo}`, { type: dbSequelize.QueryTypes.SELECT });
+    
+    console.log("preço: ",precoMenorQueCusto[0].sales_price)
+    verificarSeEstaNoLimite = precoMenorQueCusto[0].sales_price
 
-    res.json({ msg: 'Valor do produto atualizado com sucesso.' });
+    const valorMaximoPermitido = verificarSeEstaNoLimite * (1 + 10 / 100);
+    const valorMinimoPermitido = verificarSeEstaNoLimite * (1 - 10 / 100);
+
+    console.log(valorMaximoPermitido, valorMinimoPermitido )
+
+    if (precoMenorQueCusto.length > 0) {
+      
+      console.log('TEstando novo preço se é > que o custo do produto : ');
+      if(novoPreco >= valorMinimoPermitido && novoPreco <= valorMaximoPermitido){
+        console.log("testando os 10%")
+        await dbSequelize.query(`UPDATE products SET sales_price = ${novoPreco} WHERE code = ${codigo}`);
+        res.json({ msg: 'Valor do produto atualizado com sucesso.'  });
+      }
+      else{
+        res.json({ msg: 'Valor do produto NÂO foi atualizado pq é maior ou menor que os 10%.'  });
+      }
+      
+    }
+
+
+
+    else{
+      
+      res.json({ msg: 'Valor do produto NÂO foi atualizado.'  });
+
+    }
+    
+    
+    // const dadosAtt = await dbSequelize.query(`SELECT sales_price FROM products WHERE code = ${codigo}`);
+
+    // const dadosDes = await dbSequelize.query(`SELECT * FROM products WHERE code = ${codigo}`);
+    // Atualize o valor do produto
+    // res.json({dadosAtt});
 }
 
 

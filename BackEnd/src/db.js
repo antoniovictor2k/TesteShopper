@@ -1,7 +1,7 @@
 // Alterar de acordo com o seu banco de dados!
 const schema = "antonio"; 
 const user = "root";
-const password = "";
+const password = "vi93462001";
 // 
 
 

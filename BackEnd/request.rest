@@ -3,3 +3,14 @@ GET http://localhost:9000/ecommerce/todosproducts
 ###
 
 GET http://localhost:9000/ecommerce/todospacks
+
+###
+#atualizar dados;
+PUT http://localhost:9000/ecommerce/atualizarpreco
+Content-Type: application/json
+
+{
+    "codigo":1020,
+    "novoPreco":109
+}
+
