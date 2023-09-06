@@ -10,7 +10,7 @@ PUT http://localhost:9000/ecommerce/atualizarpreco
 Content-Type: application/json
 
 {
-    "codigo":1020,
+    "codigo":18,
     "novoPreco":109
 }
 

@@ -41,7 +41,7 @@ const ecommerceControlle = {
     const precoMenorQueCusto = await dbSequelize.query(`SELECT code, cost_price, sales_price FROM products WHERE ${novoPreco} > cost_price and code = ${codigo}`, { type: dbSequelize.QueryTypes.SELECT });
     
     console.log("preço: ",precoMenorQueCusto[0].sales_price)
-    const verificarSeEstaNoLimite = precoMenorQueCusto[0].sales_price
+    verificarSeEstaNoLimite = precoMenorQueCusto[0].sales_price
 
     const valorMaximoPermitido = verificarSeEstaNoLimite * (1 + 10 / 100);
     const valorMinimoPermitido = verificarSeEstaNoLimite * (1 - 10 / 100);
@@ -50,25 +50,28 @@ const ecommerceControlle = {
 
     if (precoMenorQueCusto.length > 0) {
       
-        console.log('Testando novo preço se é > que o custo do produto: ');
-        if(novoPreco >= valorMinimoPermitido && novoPreco <= valorMaximoPermitido){
-            console.log("Testando os 10%");
-
-           
-            // Atualize o preço do produto
-            await dbSequelize.query(`UPDATE products, packs SET sales_price = ${novoPreco}*qty WHERE code = ${codigo}`);
-            res.json({ msg: 'Valor do produto atualizado com sucesso.'  });
-        }
-        else{
-            res.json({ msg: 'Valor do produto NÃO foi atualizado porque é maior ou menor que os 10%.'  });
-        }
+      console.log('TEstando novo preço se é > que o custo do produto : ');
+      if(novoPreco >= valorMinimoPermitido && novoPreco <= valorMaximoPermitido){
+        console.log("testando os 10%")
+        await dbSequelize.query(`UPDATE products SET sales_price = ${novoPreco} WHERE code = ${codigo}`);
+        res.json({ msg: 'Valor do produto atualizado com sucesso.'  });
+      }
+      else{
+        res.json({ msg: 'Valor do produto NÂO foi atualizado pq é maior ou menor que os 10%.'  });
+      }
       
     }
-    else{
-        res.json({ msg: 'Valor do produto NÃO foi atualizado.'  });
-    }
-}
 
+
+
+    else{
+      
+      res.json({ msg: 'Valor do produto NÂO foi atualizado.'  });
+
+    }
+    
+
+}
 
 
 };

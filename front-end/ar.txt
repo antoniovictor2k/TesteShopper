@@ -1,0 +1,116 @@
+const mysql = require('mysql2');
+
+// Configurar a conexão com o banco de dados
+const connection = mysql.createConnection({
+  host: 'seu_host',
+  user: 'seu_usuario',
+  password: 'sua_senha',
+  database: 'sua_base_de_dados',
+});
+
+
+
+// Função para reajustar o preço de um produto e atualizar o banco de dados
+async function reajustarPrecoProduto(packId, novoPrecoProduto) {
+  try {
+    // Consultar o preço atual do pacote e dos componentes
+    const [packData] = await connection.promise().query(
+      'SELECT p.code AS pack_code, pc.product_id, pc.qty, pc.qty * p.sales_price AS component_total_price ' +
+      'FROM packs pc ' +
+      'INNER JOIN products p ON pc.product_id = p.code ' +
+      'WHERE pc.pack_id = ?',
+      [packId]
+    );
+
+    if (packData.length === 0) {
+      console.log('Pacote não encontrado.');
+      return;
+    }
+
+    const packCode = packData[0].pack_code;
+    const componentTotalPrice = packData.reduce((total, row) => total + row.component_total_price, 0);
+
+    // Calcular o novo preço do produto individual
+    const novoPrecoComponente = novoPrecoProduto / componentTotalPrice;
+
+    // Atualizar o preço do produto no banco de dados
+    await connection.promise().query(
+      'UPDATE products SET sales_price = ? WHERE code = ?',
+      [novoPrecoComponente, packCode]
+    );
+
+    // Calcular o novo preço do pacote
+    const novoPrecoPacote = packData.reduce((total, row) => total + row.qty * novoPrecoComponente, 0);
+
+    // Atualizar o preço do pacote no banco de dados
+    await connection.promise().query(
+      'UPDATE products SET sales_price = ? WHERE code = ?',
+      [novoPrecoPacote, packId]
+    );
+
+    console.log('Preços atualizados com sucesso.');
+  } catch (error) {
+    console.error('Erro ao reajustar os preços:', error);
+  } finally {
+    connection.end();
+  }
+}
+
+// Exemplo de uso
+reajustarPrecoProduto(1000, 25.00); // Reajustar o preço do pacote 1000 para R$ 25.00
+
+
+
+
+
+atualizarProduto: async (req, res) => {
+    const { codigo, novoPreco } = req.body;
+
+    // Verifique se o produto com o código fornecido existe
+    const produtoExistente = await dbSequelize.query(`SELECT * FROM products WHERE code = ${codigo}`, { type: dbSequelize.QueryTypes.SELECT });
+
+    if (!produtoExistente || produtoExistente.length === 0) {
+        return res.status(404).json({ error: 'Produto não encontrado.' });
+    }
+
+    const precoMenorQueCusto = await dbSequelize.query(`SELECT code, cost_price, sales_price FROM products WHERE ${novoPreco} > cost_price and code = ${codigo}`, { type: dbSequelize.QueryTypes.SELECT });
+    
+    console.log("preço: ",precoMenorQueCusto[0].sales_price)
+    const verificarSeEstaNoLimite = precoMenorQueCusto[0].sales_price
+
+    const valorMaximoPermitido = verificarSeEstaNoLimite * (1 + 10 / 100);
+    const valorMinimoPermitido = verificarSeEstaNoLimite * (1 - 10 / 100);
+
+    console.log(valorMaximoPermitido, valorMinimoPermitido )
+
+    if (precoMenorQueCusto.length > 0) {
+      
+        console.log('Testando novo preço se é > que o custo do produto: ');
+        if(novoPreco >= valorMinimoPermitido && novoPreco <= valorMaximoPermitido){
+            console.log("Testando os 10%");
+
+            // Verifique se o produto é um componente de algum pacote
+            const pacoteExistente = await dbSequelize.query(`SELECT pack_id, qty FROM packs WHERE product_id = ${codigo}`, { type: dbSequelize.QueryTypes.SELECT });
+
+            if (pacoteExistente.length > 0) {
+                // Se o produto é um componente de um pacote, reajuste o preço do pacote também
+                const reajustePacote = novoPreco / verificarSeEstaNoLimite;
+
+                await dbSequelize.query(
+                    `UPDATE products SET sales_price = sales_price * ${reajustePacote} WHERE code IN (SELECT pack_id FROM packs WHERE product_id = ${codigo})`
+                );
+            }
+
+            // Atualize o preço do produto
+            await dbSequelize.query(`UPDATE products SET sales_price = ${novoPreco} WHERE code = ${codigo}`);
+            res.json({ msg: 'Valor do produto atualizado com sucesso.'  });
+        }
+        else{
+            res.json({ msg: 'Valor do produto NÃO foi atualizado porque é maior ou menor que os 10%.'  });
+        }
+      
+    }
+    else{
+        res.json({ msg: 'Valor do produto NÃO foi atualizado.'  });
+    }
+}
