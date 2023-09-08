@@ -10,7 +10,40 @@ PUT http://localhost:9000/ecommerce/atualizarpreco
 Content-Type: application/json
 
 {
-    "codigo":18,
-    "novoPreco":109
+  "produtos": [
+    {
+      "codigo": 2222,
+      "novoPreco": 220
+    },
+    {
+        "codigo": 2223,
+      "novoPreco": 160
+    },
+    {
+        "codigo": 2224,
+      "novoPreco": 560
+    }
+  ]
 }
-
+###
+# {
+#   "produtos": [
+#     {
+#       "codigo": 16,
+#       "novoPreco": 100
+#     },
+#     {
+#       "codigo": 18,
+#       "novoPreco": 800
+#     },
+#     {
+#       "codigo": 19,
+#       "novoPreco": 20
+#     },
+#     {
+#       "codigo": 20,
+#       "novoPreco": 40
+#     }
+    
+#   ]
+# }
